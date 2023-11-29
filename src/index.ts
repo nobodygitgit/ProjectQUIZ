@@ -7,10 +7,12 @@ const answersNode: HTMLDivElement = document.querySelector("#answers")!
 const backNode: HTMLButtonElement = document.querySelector("#back")!
 const nextNode: HTMLButtonElement = document.querySelector("#next")!
 const endNode: HTMLButtonElement = document.querySelector("#end")!
+const cancelNode: HTMLButtonElement = document.querySelector("#cancel")!
+const returnNode: HTMLButtonElement = document.querySelector("#return")!
 const questionTimeNode: HTMLSpanElement = document.querySelector("#question-time")!
 const totalTimeNode: HTMLSpanElement = document.querySelector("#total-time")!
-
-// console.log(testData)
+const startPageNode: HTMLDivElement = document.querySelector("#start-page")!
+const startButtonNode: HTMLButtonElement = document.querySelector("#start-button")!
 
 titleNode.innerHTML = testData.title;
 
@@ -18,6 +20,16 @@ let currentIntervalId: number
 
 localStorage.setItem("current-question-idx", "0")
 localStorage.setItem("test-data", JSON.stringify(testData))
+
+document.querySelector("section")!.style.display = "none";
+
+const startTest = (): void => {
+    startPageNode.style.display = "none";
+    document.querySelector("section")!.style.display = "block";
+    displayQuestion();
+};
+
+startButtonNode.addEventListener("click", startTest);
 
 const startCounter = (): void => {
     let time: number = 0;
@@ -69,4 +81,24 @@ backNode.addEventListener("click", (e)=> {
     displayQuestion()
 })
 
-displayQuestion()
+cancelNode.addEventListener("click", (e): void => {
+    e.preventDefault();
+    e.stopPropagation();
+
+    document.querySelector("section")!.style.display = "none";
+    document.getElementById("koniec")!.style.display = "block";
+    document.getElementById("koniec")!.innerHTML = "Test został anulowany <br><br>";
+    document.getElementById("koniec")!.append(document.getElementById("return")!);
+    stopCounter();
+})
+
+returnNode.addEventListener("click", (e): void => {
+    e.preventDefault();
+    e.stopPropagation();
+
+    startPageNode.style.display = "block";
+    document.querySelector("section")!.style.display = "none";
+    document.getElementById("koniec")!.style.display = "none";
+    document.getElementById("buttons")!.append(document.getElementById("return")!);
+    stopCounter();
+})

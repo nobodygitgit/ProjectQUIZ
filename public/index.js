@@ -5,13 +5,23 @@ const answersNode = document.querySelector("#answers");
 const backNode = document.querySelector("#back");
 const nextNode = document.querySelector("#next");
 const endNode = document.querySelector("#end");
+const cancelNode = document.querySelector("#cancel");
+const returnNode = document.querySelector("#return");
 const questionTimeNode = document.querySelector("#question-time");
 const totalTimeNode = document.querySelector("#total-time");
-// console.log(testData)
+const startPageNode = document.querySelector("#start-page");
+const startButtonNode = document.querySelector("#start-button");
 titleNode.innerHTML = testData.title;
 let currentIntervalId;
 localStorage.setItem("current-question-idx", "0");
 localStorage.setItem("test-data", JSON.stringify(testData));
+document.querySelector("section").style.display = "none";
+const startTest = () => {
+    startPageNode.style.display = "none";
+    document.querySelector("section").style.display = "block";
+    displayQuestion();
+};
+startButtonNode.addEventListener("click", startTest);
 const startCounter = () => {
     let time = 0;
     currentIntervalId = setInterval(() => {
@@ -54,4 +64,21 @@ backNode.addEventListener("click", (e) => {
     localStorage.setItem("current-question-idx", `${currentIdx - 1}`);
     displayQuestion();
 });
-displayQuestion();
+cancelNode.addEventListener("click", (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    document.querySelector("section").style.display = "none";
+    document.getElementById("koniec").style.display = "block";
+    document.getElementById("koniec").innerHTML = "Test został anulowany <br><br>";
+    document.getElementById("koniec").append(document.getElementById("return"));
+    stopCounter();
+});
+returnNode.addEventListener("click", (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    startPageNode.style.display = "block";
+    document.querySelector("section").style.display = "none";
+    document.getElementById("koniec").style.display = "none";
+    document.getElementById("buttons").append(document.getElementById("return"));
+    stopCounter();
+});
