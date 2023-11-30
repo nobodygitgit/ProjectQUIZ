@@ -6,7 +6,6 @@ export interface Test {
 export interface Question {
     question: string,
     answers: Answer[],
-    timeSpent: number,
     correctAnswer: string
 }
 

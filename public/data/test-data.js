@@ -1,7 +1,6 @@
 export default {
     title: "Test wiedzy ogólnej",
     questions: [{
-            timeSpent: 0,
             question: "Który pierwiastek chemiczny jest oznaczany symbolem 'O'?",
             correctAnswer: "Tlen",
             answers: [{
@@ -22,7 +21,6 @@ export default {
                 }]
         },
         {
-            timeSpent: 0,
             question: "Które państwo jest największe pod względem powierzchni na świecie?",
             correctAnswer: "Rosja",
             answers: [{
@@ -43,7 +41,6 @@ export default {
                 }]
         },
         {
-            timeSpent: 0,
             question: "Kto wygrał worldsy 2023 w LoL?",
             correctAnswer: "SKT T1",
             answers: [{
@@ -64,7 +61,6 @@ export default {
                 }]
         },
         {
-            timeSpent: 0,
             question: "Ile planet krąży wokół Słońca w naszym Układzie Słonecznym?",
             correctAnswer: "8",
             answers: [{
@@ -85,7 +81,6 @@ export default {
                 }]
         },
         {
-            timeSpent: 0,
             question: "Jaki jest najwyższy szczyt na świecie?",
             correctAnswer: "Mount Everest",
             answers: [{
@@ -106,7 +101,6 @@ export default {
                 }]
         },
         {
-            timeSpent: 0,
             question: "W którym roku odbyła się pierwsza podróż człowieka w kosmos?",
             correctAnswer: "1961",
             answers: [{
