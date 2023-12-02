@@ -11,8 +11,12 @@ const questionTimeNode = document.querySelector("#question-time");
 const totalTimeNode = document.querySelector("#total-time");
 const startPageNode = document.querySelector("#start-page");
 const startButtonNode = document.querySelector("#start-button");
+const cancelInfoNode = document.querySelector("#cancelInfo");
+const resultsNode = document.querySelector("#results");
+const buttonsNode = document.querySelector("#buttons");
 titleNode.innerHTML = testData.title;
 let currentIntervalId;
+let totalTime = 0;
 localStorage.setItem("current-question-idx", "0");
 localStorage.setItem("test-data", JSON.stringify(testData));
 document.querySelector("section").style.display = "none";
@@ -38,27 +42,45 @@ const clearStorage = () => {
     totalTimeNode.innerHTML = '0';
 };
 clearStorage();
+const shuffleArray = (array) => {
+    for (let i = array.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [array[i], array[j]] = [array[j], array[i]];
+    }
+    return array;
+};
+const shuffleQuestions = () => {
+    const testData = JSON.parse(localStorage.getItem("test-data"));
+    if (testData && testData.questions) {
+        testData.questions = shuffleArray(testData.questions);
+        localStorage.setItem("test-data", JSON.stringify(testData));
+    }
+};
 const startTest = () => {
     startPageNode.style.display = "none";
     document.querySelector("section").style.display = "block";
+    shuffleQuestions();
     displayQuestion();
     totalTime = 0;
+    backNode.disabled = true;
+    endNode.disabled = true;
 };
 startButtonNode.addEventListener("click", startTest);
-let totalTime = 0;
 const startCounter = () => {
-    let time = 0;
+    const currentIdx = parseInt(localStorage.getItem("current-question-idx"));
+    const savedAnswer = localStorage.getItem(`answer-${currentIdx}`);
+    let time = parseInt(localStorage.getItem(`question-time-${currentIdx}`)) || 0;
     currentIntervalId = setInterval(() => {
-        questionTimeNode.innerHTML = `${++time}`;
+        if (!savedAnswer) {
+            questionTimeNode.innerHTML = `${++time}`;
+        }
         totalTimeNode.innerHTML = `${++totalTime}`;
-        const currentIdx = parseInt(localStorage.getItem("current-question-idx"));
         localStorage.setItem(`question-time-${currentIdx}`, `${time}`);
         localStorage.setItem("total-time", `${totalTime}`);
     }, 1000);
 };
 const stopCounter = () => {
     clearInterval(currentIntervalId);
-    questionTimeNode.innerHTML = '0';
 };
 const displayQuestion = () => {
     const currentIdx = parseInt(localStorage.getItem("current-question-idx"));
@@ -76,6 +98,8 @@ const displayQuestion = () => {
     }
     const questionTime = parseInt(localStorage.getItem(`question-time-${currentIdx}`)) || 0;
     questionTimeNode.innerHTML = `${questionTime}`;
+    backNode.disabled = currentIdx === 0;
+    nextNode.disabled = currentIdx === totalQuestions - 1;
     startCounter();
 };
 const displayAnswers = (answers) => {
@@ -94,42 +118,89 @@ const saveAnswer = () => {
         localStorage.setItem(`answer-${currentIdx}`, selectedAnswer.value);
     }
 };
+const isAllQuestionsAnswered = () => {
+    for (let i = 0; i < totalQuestions; i++) {
+        if (!localStorage.getItem(`answer-${i}`)) {
+            return false;
+        }
+    }
+    return true;
+};
+const updateEndButtonState = () => {
+    endNode.disabled = !isAllQuestionsAnswered();
+};
+const handleAnswerClick = () => {
+    saveAnswer();
+    updateEndButtonState();
+};
+answersNode.addEventListener("click", () => {
+    handleAnswerClick();
+});
 nextNode.addEventListener("click", (e) => {
     e.preventDefault();
     e.stopPropagation();
     stopCounter();
-    saveAnswer();
+    handleAnswerClick();
     const currentIdx = parseInt(localStorage.getItem("current-question-idx"));
-    localStorage.setItem("current-question-idx", `${currentIdx + 1}`);
     if (currentIdx < totalQuestions - 1) {
         localStorage.setItem("current-question-idx", `${currentIdx + 1}`);
         displayQuestion();
-    }
-    else {
-        alert("To jest ostatnie pytanie.");
     }
 });
 backNode.addEventListener("click", (e) => {
     e.preventDefault();
     e.stopPropagation();
     stopCounter();
-    saveAnswer();
+    handleAnswerClick();
     const currentIdx = parseInt(localStorage.getItem("current-question-idx"));
     if (currentIdx > 0) {
         localStorage.setItem("current-question-idx", `${currentIdx - 1}`);
         displayQuestion();
     }
-    else {
-        alert("To jest pierwsze pytanie.");
+});
+endNode.addEventListener("click", (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    stopCounter();
+    saveAnswer();
+    const totalQuestions = JSON.parse(localStorage.getItem("test-data")).questions.length;
+    let correctAnswers = 0;
+    const questionResults = [];
+    for (let i = 0; i < totalQuestions; i++) {
+        if (!localStorage.getItem(`answer-${i}`)) {
+            break;
+        }
+        const currentQuestion = JSON.parse(localStorage.getItem("test-data")).questions[i];
+        const savedAnswer = localStorage.getItem(`answer-${i}`);
+        const qTime = localStorage.getItem(`question-time-${i}`);
+        questionResults.push({
+            question: currentQuestion.question,
+            userAnswer: savedAnswer,
+            correctAnswer: currentQuestion.correctAnswer,
+            questionTime: qTime
+        });
+        if (savedAnswer === currentQuestion.correctAnswer) {
+            correctAnswers++;
+        }
+    }
+    if (isAllQuestionsAnswered()) {
+        const accuracy = (correctAnswers / totalQuestions) * 100;
+        document.querySelector("section").style.display = "none";
+        resultsNode.innerHTML = `<h2>Wyniki:</h2> Ilość pytań: ${totalQuestions} <br>Poprawne odpowiedzi: ${correctAnswers} <br>Błędne odpowiedzi: ${totalQuestions - correctAnswers} <br>Dokładność: ${accuracy.toFixed(2)}%<br>`;
+        resultsNode.innerHTML += ("Czas spędzony nad testem: " + `${totalTime} sekund <br>`);
+        for (let i = 0; i < totalQuestions; i++) {
+            const result = questionResults[i];
+            resultsNode.innerHTML += `<br>Pytanie ${i + 1}: <br> ${result.question} <br>Twoja odpowiedź: ${result.userAnswer} <br>Poprawna odpowiedź: ${result.correctAnswer} <br>Czas spędzony nad pytaniem: ${result.questionTime} sekund<br>`;
+        }
     }
 });
 cancelNode.addEventListener("click", (e) => {
     e.preventDefault();
     e.stopPropagation();
     document.querySelector("section").style.display = "none";
-    document.getElementById("koniec").style.display = "block";
-    document.getElementById("koniec").innerHTML = "Test został anulowany <br><br>";
-    document.getElementById("koniec").append(document.getElementById("return"));
+    cancelInfoNode.style.display = "block";
+    cancelInfoNode.innerHTML = "Test został anulowany <br><br>";
+    cancelInfoNode.append(document.getElementById("return"));
     localStorage.setItem('current-question-idx', '0');
     clearStorage();
     stopCounter();
@@ -139,8 +210,8 @@ returnNode.addEventListener("click", (e) => {
     e.stopPropagation();
     startPageNode.style.display = "block";
     document.querySelector("section").style.display = "none";
-    document.getElementById("koniec").style.display = "none";
-    document.getElementById("buttons").append(document.getElementById("return"));
+    cancelInfoNode.style.display = "none";
+    buttonsNode.append(document.getElementById("return"));
     localStorage.setItem('current-question-idx', '0');
     clearStorage();
     stopCounter();
